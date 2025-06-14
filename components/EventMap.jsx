@@ -19,23 +19,40 @@ function markerColor(category) {
   return "cyan";
 }
 
-const fetcher = url => fetch(url).then(r => r.json());
-
 export default function EventMap() {
   const [events, setEvents] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch("/api/eonet")
-      .then(r => r.json())
+    fetch("https://eonet.gsfc.nasa.gov/api/v3/events")
+      .then(r => {
+        if (!r.ok) throw new Error("Failed to fetch");
+        return r.json();
+      })
       .then(d => {
+        console.log("EONET events loaded:", d.events?.length || 0);
         setEvents(d.events || []);
         setLoaded(true);
       })
+      .catch(err => {
+        console.error("EONET fetch error:", err);
+        setError(true);
+        setLoaded(true);
+      });
   }, []);
 
   function iconUrl(color) {
     return `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20">
+        <h2 className="font-bold mb-2 text-white">Natural Events Map (EONET)</h2>
+        <div className="text-red-400">Failed to load natural events data.</div>
+      </div>
+    );
   }
 
   return (
@@ -87,7 +104,9 @@ export default function EventMap() {
               )}
             </MapContainer>
           ) : (
-            <div className="animate-pulse w-full h-full bg-gray-900/30 rounded" />
+            <div className="animate-pulse w-full h-full bg-gray-900/30 rounded flex items-center justify-center">
+              <div className="text-cyan-300">Loading natural events...</div>
+            </div>
           )}
         </div>
         <div className="flex gap-2 mt-3 flex-wrap">
@@ -98,7 +117,9 @@ export default function EventMap() {
             </div>
           ))}
         </div>
-        <div className="mt-1 text-xs text-cyan-100 opacity-80">Map: OpenStreetMap | Events: NASA EONET</div>
+        <div className="mt-1 text-xs text-cyan-100 opacity-80">
+          Map: OpenStreetMap | Events: NASA EONET ({events.length} active events)
+        </div>
       </div>
     </div>
   );

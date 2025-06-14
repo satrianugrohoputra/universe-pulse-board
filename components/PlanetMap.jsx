@@ -1,100 +1,110 @@
 
 import { useState, useRef, useEffect } from "react";
 
-const layers = [
-  {
-    label: "Moon (LRO LROC WAC)",
-    value: "moon",
-    url:
-      "https://moonmaps.cartocdn.com/wmts/lroc_wac_global/WMTSCapabilities.xml",
-    // Tile URL format for a real NASA endpoint
-    // For demo you may need proxies or an actual tile server, this is a placeholder
+const planetData = {
+  moon: {
+    name: "Moon",
+    info: "Earth's only natural satellite, formed ~4.5 billion years ago",
+    facts: ["Distance: 384,400 km", "Diameter: 3,474 km", "Gravity: 1/6 of Earth"]
   },
-  {
-    label: "Mars (Visible MJ)",
-    value: "mars",
-    url:
-      "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/",
+  mars: {
+    name: "Mars",
+    info: "The Red Planet, fourth from the Sun in our solar system",
+    facts: ["Distance: 225M km", "Day: 24h 37m", "2 moons: Phobos & Deimos"]
   },
-  {
-    label: "Asteroid Vesta",
-    value: "vesta",
-    url:
-      "https://trek.nasa.gov/tiles/Vesta/EQ/Vesta_Global_ClrMosaic_450m/",
-  },
-];
+  jupiter: {
+    name: "Jupiter",
+    info: "Largest planet in our solar system, a gas giant",
+    facts: ["79 known moons", "Great Red Spot storm", "Could fit 1,300 Earths"]
+  }
+};
 
-// Workaround: Embed OpenLayers with dynamic loading (WMTS is tricky to demo here!)
 export default function PlanetMap() {
-  const [layer, setLayer] = useState("moon");
-  const ref = useRef();
+  const [selectedPlanet, setSelectedPlanet] = useState("moon");
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [currentFactIndex, setCurrentFactIndex] = useState(0);
 
   useEffect(() => {
-    import("ol/Map").then(({ default: Map }) => {
-      import("ol/View").then(({ default: View }) => {
-        import("ol/layer/Tile").then(({ default: TileLayer }) => {
-          import("ol/source/XYZ").then(({ default: XYZ }) => {
-            if (!ref.current || ref.current._map) return;
-            const base = {
-              moon:
-                "https://s3.amazonaws.com/moonwmts/lro_lroc_wac_global/%7BZ%7D/%7BX%7D/%7BY%7D.png",
-              mars:
-                "https://s3.amazonaws.com/marswmts/mdim21/%7BZ%7D/%7BX%7D/%7BY%7D.png",
-              vesta:
-                "https://stamen-tiles.a.ssl.fastly.net/toner/%7BZ%7D/%7BX%7D/%7BY%7D.png",
-            };
-            const map = new Map({
-              target: ref.current,
-              layers: [
-                new TileLayer({
-                  source: new XYZ({
-                    url: base[layer],
-                    crossOrigin: "anonymous",
-                  }),
-                }),
-              ],
-              view: new View({
-                center:
-                  layer === "moon"
-                    ? [2321420, -395228]
-                    : layer === "mars"
-                    ? [11538000, -4263500]
-                    : [0, 0],
-                zoom: 2.2,
-                projection: "EPSG:3857",
-              }),
-              controls: [],
-            });
-            ref.current._map = map;
-          });
-        });
-      });
-    });
-    return () => {
-      if (ref.current && ref.current._map) {
-        ref.current._map.setTarget(null);
-        ref.current._map = null;
-      }
-    };
-  }, [layer]);
+    setImageLoaded(false);
+    setCurrentFactIndex(0);
+  }, [selectedPlanet]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentFactIndex(prev => 
+        (prev + 1) % planetData[selectedPlanet].facts.length
+      );
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [selectedPlanet]);
+
+  const planetImages = {
+    moon: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=600&fit=crop",
+    mars: "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=800&h=600&fit=crop", 
+    jupiter: "https://images.unsplash.com/photo-1614313913007-2b4ae8ce32d6?w=800&h=600&fit=crop"
+  };
 
   return (
     <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col">
-      <div className="flex justify-between items-center mb-2">
-        <span className="font-bold text-white">Planetary Map</span>
+      <div className="flex justify-between items-center mb-4">
+        <span className="font-bold text-white text-lg">Planetary Explorer</span>
         <select
-          className="bg-black/30 border border-cyan-400 text-white rounded px-2 py-1 focus:outline-accent"
-          value={layer}
-          onChange={e => setLayer(e.target.value)}
+          className="bg-black/50 border border-cyan-400/50 text-white rounded-lg px-3 py-1 focus:outline-none focus:border-cyan-400"
+          value={selectedPlanet}
+          onChange={e => setSelectedPlanet(e.target.value)}
         >
-          <option value="moon">Moon</option>
-          <option value="mars">Mars</option>
-          <option value="vesta">Vesta</option>
+          <option value="moon">🌙 Moon</option>
+          <option value="mars">🔴 Mars</option>
+          <option value="jupiter">🪐 Jupiter</option>
         </select>
       </div>
-      <div ref={ref} className="w-full h-56 rounded-md overflow-hidden bg-black mt-2 border border-white/10" />
-      <div className="text-xs mt-2 text-cyan-100 opacity-70">
-        Drag or zoom to explore. Tiles: NASA/JPL/USGS
+      
+      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-black/30 mb-4">
+        {!imageLoaded && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
+          </div>
+        )}
+        <img
+          src={planetImages[selectedPlanet]}
+          alt={planetData[selectedPlanet].name}
+          className={`w-full h-full object-cover transition-opacity duration-500 ${
+            imageLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          onLoad={() => setImageLoaded(true)}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute bottom-4 left-4 right-4">
+          <h3 className="text-white font-bold text-xl mb-1">
+            {planetData[selectedPlanet].name}
+          </h3>
+          <p className="text-cyan-200 text-sm">
+            {planetData[selectedPlanet].info}
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-black/30 rounded-lg p-3 mb-3">
+        <div className="text-cyan-300 text-sm font-medium mb-1">Did you know?</div>
+        <div className="text-white text-sm transition-all duration-500">
+          {planetData[selectedPlanet].facts[currentFactIndex]}
+        </div>
+      </div>
+
+      <div className="flex justify-center gap-1">
+        {planetData[selectedPlanet].facts.map((_, index) => (
+          <div
+            key={index}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              index === currentFactIndex ? 'bg-cyan-400' : 'bg-white/30'
+            }`}
+          />
+        ))}
+      </div>
+
+      <div className="text-xs mt-3 text-cyan-100 opacity-70 text-center">
+        Explore celestial bodies • Images via Unsplash
       </div>
     </div>
   );
