@@ -2,15 +2,16 @@
 import useSWR from "swr";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useState } from "react";
+import { fetchCryptoData } from "../src/utils/fetchCryptoData";
 
-// Timeframes for charting
+// Timeframes - REMOVE MAX as CoinGecko requires paid for >1095 days
 const timeframes = [
-  { key: "1", label: "1HR", days: "1", interval: "hourly" },
-  { key: "1d", label: "1D", days: "1", interval: "hourly" },
-  { key: "7", label: "1W", days: "7", interval: "daily" },
-  { key: "30", label: "1M", days: "30", interval: "daily" },
-  { key: "365", label: "1Y", days: "365", interval: "daily" },
-  { key: "max", label: "MAX", days: "max", interval: "daily" }
+  { key: "1h", label: "1HR", days: "1", interval: "hourly", warn: false },
+  { key: "1d", label: "1D", days: "1", interval: "hourly", warn: false },
+  { key: "7d", label: "1W", days: "7", interval: "daily", warn: false },
+  { key: "1m", label: "1M", days: "30", interval: "daily", warn: false },
+  { key: "1y", label: "1Y", days: "365", interval: "daily", warn: false },
+  { key: "2y", label: "2Y", days: "730", interval: "daily", warn: true },
 ];
 
 // Supported coins
@@ -19,7 +20,7 @@ const coins = [
   { id: "ethereum", symbol: "ETH", name: "Ethereum" }
 ];
 
-// Fetcher with error handling
+// Fetcher for historic chart (CoinGecko direct, no proxy!)
 const fetcher = async (url) => {
   console.log("[CryptoCard] Fetching:", url);
   const response = await fetch(url);
@@ -28,21 +29,36 @@ const fetcher = async (url) => {
 };
 
 /**
- * Chart only - still pulls from CoinGecko for historic data
+ * Chart only - CoinGecko for historic data (limited)
  */
 function CryptoChart({ coin, timeframe }) {
-  const { data, error, isLoading } = useSWR(
-    `https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=${timeframe.days}&interval=${timeframe.interval}`,
+  const blockApiMax = timeframe.key === "max" || parseInt(timeframe.days) > 1095;
+  const chartDataSWR = useSWR(
+    !blockApiMax
+      ? `https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=${timeframe.days}&interval=${timeframe.interval}`
+      : null,
     fetcher,
-    { 
+    {
       refreshInterval: 60000,
       onError: (error) => {
         console.error("SWR error for chart data:", error);
       }
     }
   );
+  const { data, error, isLoading } = chartDataSWR;
 
-  // --- Consistent height patch for "chart" area
+  // Show visible warning if timeframe not supported.
+  if (blockApiMax) {
+    return (
+      <div className="w-full h-48 bg-black/20 rounded-lg flex flex-col items-center justify-center gap-3">
+        <div className="text-yellow-400 font-semibold">Timeframe not available</div>
+        <div className="text-xs text-white/70 max-w-xs text-center">
+          Due to CoinGecko API limits, charts beyond 1 year require a paid plan. Please select a shorter range.
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="w-full h-48 bg-black/20 rounded-lg flex items-center justify-center">
@@ -68,7 +84,7 @@ function CryptoChart({ coin, timeframe }) {
   }
 
   const chartData = data.prices.map(([timestamp, price], index) => ({
-    time: timeframe.days === "1" 
+    time: timeframe.days === "1"
       ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : new Date(timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }),
     price: price,
@@ -80,14 +96,14 @@ function CryptoChart({ coin, timeframe }) {
       <div className="w-full h-48 bg-black/20 rounded-lg p-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fill: '#94a3b8' }}
               interval="preserveStartEnd"
             />
-            <YAxis 
+            <YAxis
               domain={['dataMin * 0.95', 'dataMax * 1.05']}
               axisLine={false}
               tickLine={false}
@@ -120,21 +136,35 @@ function CryptoChart({ coin, timeframe }) {
   );
 }
 
-/**
- * NEW: Top section fetches current price & 24h change from /api/crypto (proxy w/ CoinAPI fallback)
- */
 function CryptoCard() {
   const [selectedCoin, setSelectedCoin] = useState(coins[0]);
+  // Set default to "1D" (never "max" or >1y)
   const [selectedTimeframe, setSelectedTimeframe] = useState(timeframes[1]);
+  const [fallbackSource, setFallbackSource] = useState(null);
 
-  // Server data (current price, % 24h) from proxy endpoint with CoinGecko + CoinAPI fallback
-  const { data: currentData, error: priceError, isLoading: priceLoading } = useSWR(
-    "/api/crypto",
-    fetcher,
+  // Server data (current price, % 24h) uses fetchCryptoData util
+  const {
+    data: currentData,
+    error: priceError,
+    isLoading: priceLoading
+  } = useSWR(
+    "crypto-prices-vite",
+    async () => {
+      try {
+        const dat = await fetchCryptoData();
+        setFallbackSource("CoinGecko");
+        return dat;
+      } catch (e) {
+        // If fetchCryptoData throws, means both failed
+        setFallbackSource("CoinAPI (fallback)");
+        throw e;
+      }
+    },
     {
       refreshInterval: 60000,
       onError: (err) => {
-        console.error("[CryptoCard] /api/crypto error:", err);
+        setFallbackSource("Unavailable");
+        console.error("[CryptoCard] crypto data error:", err);
       }
     }
   );
@@ -178,7 +208,7 @@ function CryptoCard() {
         ) : priceError || price == null ? (
           <div>
             <div className="text-red-400 font-semibold text-lg">Failed to load price</div>
-            <div className="text-xs text-white/60">Server or API error</div>
+            <div className="text-xs text-white/60">Data source: {fallbackSource || "Unknown"}<br />Server/API error</div>
           </div>
         ) : (
           <>
@@ -204,6 +234,8 @@ function CryptoCard() {
                 ? 'bg-cyan-600 text-white shadow-lg border-2 border-cyan-400'
                 : 'bg-black/30 text-cyan-300 hover:bg-black/50 border border-transparent'
             }`}
+            disabled={timeframe.warn}
+            title={timeframe.warn ? "API timeframe not supported (select ≤1Y)" : ""}
           >
             {timeframe.label}
           </button>
@@ -211,9 +243,9 @@ function CryptoCard() {
       </div>
       <div className="text-xs text-cyan-100 opacity-80 mt-4 text-center">
         <div className="flex items-center justify-center gap-2">
-          <span>Realtime Price: API (CoinGecko→CoinAPI)</span>
+          <span>Realtime Price: {fallbackSource || "API (auto)"}</span>
           <span>•</span>
-          <span>Chart: CoinGecko</span>
+          <span>Chart: CoinGecko (≤1y only)</span>
           <span>•</span>
           <span>Updates every minute</span>
           <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse ml-1" />
