@@ -47,7 +47,7 @@ export default function PlanetMap() {
   };
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 h-[24rem] flex flex-col">
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col min-h-[24rem] h-[24rem]">
       <div className="flex justify-between items-center mb-4">
         <span className="font-bold text-white text-lg">Planetary Explorer</span>
         <select
@@ -93,7 +93,7 @@ export default function PlanetMap() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-between">
+      <div className="flex-1 flex flex-col justify-between min-h-0">
         <div className="bg-black/30 rounded-lg p-3 mb-3">
           <div className="text-cyan-300 text-sm font-medium mb-1">Did you know?</div>
           <div className="text-white text-sm transition-all duration-500">

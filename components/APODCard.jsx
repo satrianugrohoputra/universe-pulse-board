@@ -26,19 +26,22 @@ export default function APODCard() {
     return () => clearInterval(interval);
   }, [data]);
 
+  // --- HEIGHT PATCHING 
+  // Set to h-[24rem] for visual parity, constrain image area for all cases
+
   if (isLoading) {
     return (
-      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[22rem]">
-        <div className="animate-pulse rounded-lg bg-white/10 h-56 w-full mb-4" />
-        <div className="w-2/3 h-4 bg-white/20 rounded mb-2" />
-        <div className="w-1/2 h-3 bg-white/10 rounded" />
+      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[24rem] h-[24rem]">
+        <div className="animate-pulse rounded-lg bg-white/10 h-48 w-full mb-4" />
+        <div className="w-2/3 h-6 bg-white/20 rounded mb-2" />
+        <div className="w-1/2 h-4 bg-white/10 rounded" />
       </div>
     );
   }
 
   if (error || !data || !Array.isArray(data) || data.length === 0) {
     return (
-      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[22rem]">
+      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[24rem] h-[24rem] items-center justify-center">
         <div className="text-red-400">Error loading Astronomy Picture of the Day.</div>
       </div>
     );
@@ -47,7 +50,7 @@ export default function APODCard() {
   const currentAPOD = data[currentIndex];
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[22rem] overflow-hidden">
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[24rem] h-[24rem] overflow-hidden">
       {/* Back to Dashboard Button */}
       <button
         className="absolute top-4 left-4 z-20 bg-black/70 hover:bg-cyan-600 text-white p-2 rounded-lg text-xs font-medium transition-colors"
@@ -56,16 +59,16 @@ export default function APODCard() {
         ← Dashboard
       </button>
 
-      <div className="relative flex-1">
+      <div className="relative" style={{ minHeight: "12rem", height: "12rem", maxHeight: "12rem" }}>
         {currentAPOD.media_type === "image" ? (
           <img 
             src={currentAPOD.url} 
             alt={currentAPOD.title} 
-            className="w-full h-56 object-cover rounded-lg shadow mb-2 transition-opacity duration-500 cursor-pointer hover:opacity-90" 
+            className="w-full h-full object-cover rounded-lg shadow mb-2 transition-opacity duration-500 cursor-pointer hover:opacity-90" 
             onClick={() => setZoomedImage(currentAPOD.url)}
           />
         ) : (
-          <div className="w-full aspect-video h-56 mb-2 rounded-lg overflow-hidden bg-black/80 flex items-center justify-center">
+          <div className="w-full aspect-video h-full mb-2 rounded-lg overflow-hidden bg-black/80 flex items-center justify-center">
             <iframe
               src={currentAPOD.url}
               title={currentAPOD.title}
@@ -76,9 +79,8 @@ export default function APODCard() {
             ></iframe>
           </div>
         )}
-        
         {/* Image counter and navigation */}
-        <div className="absolute top-4 right-4 flex gap-2">
+        <div className="absolute top-3 right-3 flex gap-2">
           <div className="bg-black/60 px-2 py-1 rounded text-xs text-white">
             {currentIndex + 1}/{data.length}
           </div>
@@ -95,17 +97,17 @@ export default function APODCard() {
             →
           </button>
         </div>
-
-        <div className="absolute left-4 top-16 bg-black/60 px-3 py-1 rounded-lg font-semibold text-lg text-white shadow max-w-[60%]">
+        <div className="absolute left-4 top-6 bg-black/60 px-3 py-1 rounded-lg font-semibold text-lg text-white shadow max-w-[60%]">
           {currentAPOD.title}
         </div>
-        
         {/* Date indicator */}
-        <div className="absolute left-4 bottom-20 bg-cyan-600/80 px-2 py-1 rounded text-xs text-white font-medium">
+        <div className="absolute left-4 bottom-3 bg-cyan-600/80 px-2 py-1 rounded text-xs text-white font-medium">
           {new Date(currentAPOD.date).toLocaleDateString()}
         </div>
-        
-        <div className="mt-auto text-white/90 text-sm pt-2">
+      </div>
+      
+      <div className="flex-1 flex flex-col justify-between pt-2">
+        <div className="text-white/90 text-xs">
           {expanded
             ? currentAPOD.explanation
             : currentAPOD.explanation.split(". ").slice(0, 2).join(". ") + "."}
@@ -126,7 +128,6 @@ export default function APODCard() {
             </button>
           )}
         </div>
-        
         {/* Dots indicator */}
         <div className="flex justify-center gap-1 mt-2">
           {data.map((_, index) => (

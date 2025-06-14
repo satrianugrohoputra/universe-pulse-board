@@ -42,9 +42,10 @@ function CryptoChart({ coin, timeframe }) {
     }
   );
 
+  // --- Consistent height patch for "chart" area
   if (isLoading) {
     return (
-      <div className="w-full h-64 bg-black/20 rounded-lg flex items-center justify-center">
+      <div className="w-full h-48 bg-black/20 rounded-lg flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
           <div className="text-cyan-300 text-sm">Loading chart...</div>
@@ -55,7 +56,7 @@ function CryptoChart({ coin, timeframe }) {
 
   if (error || !data?.prices || !Array.isArray(data.prices) || data.prices.length === 0) {
     return (
-      <div className="w-full h-64 bg-black/20 rounded-lg flex items-center justify-center">
+      <div className="w-full h-48 bg-black/20 rounded-lg flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 text-sm mb-2">Failed to load chart data</div>
           <div className="text-xs text-white/60">
@@ -76,7 +77,7 @@ function CryptoChart({ coin, timeframe }) {
 
   return (
     <div className="w-full">
-      <div className="w-full h-64 bg-black/20 rounded-lg p-4">
+      <div className="w-full h-48 bg-black/20 rounded-lg p-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
             <XAxis 
@@ -147,7 +148,7 @@ function CryptoCard() {
   }
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 min-h-[24rem]">
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 min-h-[24rem] h-[24rem] flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-bold text-white text-lg">Cryptocurrency Pulse</h2>
         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />

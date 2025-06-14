@@ -24,7 +24,7 @@ export default function EPICCard() {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 h-[24rem] flex flex-col">
+      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col min-h-[24rem] h-[24rem]">
         <div className="animate-pulse rounded-lg bg-white/10 h-48 w-full mb-4" />
         <div className="w-2/3 h-6 bg-white/20 rounded my-2" />
         <div className="w-1/2 h-4 bg-white/10 rounded" />
@@ -34,7 +34,7 @@ export default function EPICCard() {
 
   if (error || !data || !Array.isArray(data) || !data.length) {
     return (
-      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 h-[24rem] flex items-center justify-center">
+      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col min-h-[24rem] h-[24rem] items-center justify-center">
         <div className="text-red-400">Failed to load EPIC data.</div>
       </div>
     );
@@ -46,7 +46,7 @@ export default function EPICCard() {
   const imgUrl = `https://epic.gsfc.nasa.gov/archive/natural/${dateParts.join("/")}/jpg/${img.image}.jpg`;
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative h-[24rem] flex flex-col">
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[24rem] h-[24rem]">
       <div
         className="w-full h-48 rounded-lg overflow-hidden cursor-pointer relative group"
         onClick={() => setModal(true)}
@@ -54,9 +54,7 @@ export default function EPICCard() {
         <img
           src={imgUrl}
           alt={img.caption.slice(0,40)}
-          className={`w-full h-full object-cover transition-all duration-1000 hover:scale-105 ${
-            isRotating ? 'animate-spin' : ''
-          }`}
+          className={`w-full h-full object-cover transition-all duration-1000 hover:scale-105 ${isRotating ? 'animate-spin' : ''}`}
           style={{
             animationDuration: isRotating ? '120s' : '0s',
             animationTimingFunction: 'linear',
@@ -105,7 +103,7 @@ export default function EPICCard() {
           </button>
         </div>
       </div>
-      <div className="flex-1 flex flex-col justify-between mt-3">
+      <div className="flex-1 flex flex-col justify-between mt-3 min-h-0">
         <div>
           <div className="font-semibold text-cyan-300 text-sm flex items-center gap-2">
             <span>📅 {img.date}</span>
@@ -117,7 +115,6 @@ export default function EPICCard() {
           Distance: ~1.5M km • Natural color composite
         </div>
       </div>
-      {/* MODAL: only close button, no dashboard/back */}
       {modal && (
         <div className="fixed inset-0 z-50 backdrop-blur bg-black/90 flex items-center justify-center p-4" onClick={() => setModal(false)}>
           <div className="relative max-w-[90vw] max-h-[90vh]">
