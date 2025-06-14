@@ -24,8 +24,8 @@ export default function EPICCard() {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20">
-        <div className="animate-pulse rounded-lg bg-white/10 h-56 w-full mb-2" />
+      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 h-[24rem] flex flex-col">
+        <div className="animate-pulse rounded-lg bg-white/10 h-48 w-full mb-4" />
         <div className="w-2/3 h-6 bg-white/20 rounded my-2" />
         <div className="w-1/2 h-4 bg-white/10 rounded" />
       </div>
@@ -34,7 +34,7 @@ export default function EPICCard() {
 
   if (error || !data || !Array.isArray(data) || !data.length) {
     return (
-      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20">
+      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 h-[24rem] flex items-center justify-center">
         <div className="text-red-400">Failed to load EPIC data.</div>
       </div>
     );
@@ -46,9 +46,9 @@ export default function EPICCard() {
   const imgUrl = `https://epic.gsfc.nasa.gov/archive/natural/${dateParts.join("/")}/jpg/${img.image}.jpg`;
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative">
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative h-[24rem] flex flex-col">
       <div
-        className="w-full h-56 rounded-lg overflow-hidden cursor-pointer relative group"
+        className="w-full h-48 rounded-lg overflow-hidden cursor-pointer relative group"
         onClick={() => setModal(true)}
       >
         <img
@@ -105,13 +105,15 @@ export default function EPICCard() {
           </button>
         </div>
       </div>
-      <div className="mt-3">
-        <div className="font-semibold text-cyan-300 text-sm flex items-center gap-2">
-          <span>📅 {img.date}</span>
-          {isRotating && <span className="text-xs text-cyan-400 animate-pulse">🔄 Rotating</span>}
+      <div className="flex-1 flex flex-col justify-between mt-3">
+        <div>
+          <div className="font-semibold text-cyan-300 text-sm flex items-center gap-2">
+            <span>📅 {img.date}</span>
+            {isRotating && <span className="text-xs text-cyan-400 animate-pulse">🔄 Rotating</span>}
+          </div>
+          <div className="text-white/90 text-xs mt-1">{img.caption}</div>
         </div>
-        <div className="text-white/90 text-xs mt-1">{img.caption}</div>
-        <div className="text-cyan-200 text-xs mt-1 opacity-70">
+        <div className="text-cyan-200 text-xs mt-2 opacity-70">
           Distance: ~1.5M km • Natural color composite
         </div>
       </div>

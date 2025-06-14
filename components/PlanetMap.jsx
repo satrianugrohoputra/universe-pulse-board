@@ -47,7 +47,7 @@ export default function PlanetMap() {
   };
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col">
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 h-[24rem] flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <span className="font-bold text-white text-lg">Planetary Explorer</span>
         <select
@@ -93,26 +93,28 @@ export default function PlanetMap() {
         </div>
       </div>
 
-      <div className="bg-black/30 rounded-lg p-3 mb-3">
-        <div className="text-cyan-300 text-sm font-medium mb-1">Did you know?</div>
-        <div className="text-white text-sm transition-all duration-500">
-          {planetData[selectedPlanet].facts[currentFactIndex]}
+      <div className="flex-1 flex flex-col justify-between">
+        <div className="bg-black/30 rounded-lg p-3 mb-3">
+          <div className="text-cyan-300 text-sm font-medium mb-1">Did you know?</div>
+          <div className="text-white text-sm transition-all duration-500">
+            {planetData[selectedPlanet].facts[currentFactIndex]}
+          </div>
         </div>
-      </div>
 
-      <div className="flex justify-center gap-1">
-        {planetData[selectedPlanet].facts.map((_, index) => (
-          <div
-            key={index}
-            className={`w-2 h-2 rounded-full transition-colors ${
-              index === currentFactIndex ? 'bg-cyan-400' : 'bg-white/30'
-            }`}
-          />
-        ))}
-      </div>
+        <div className="flex justify-center gap-1 mb-3">
+          {planetData[selectedPlanet].facts.map((_, index) => (
+            <div
+              key={index}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                index === currentFactIndex ? 'bg-cyan-400' : 'bg-white/30'
+              }`}
+            />
+          ))}
+        </div>
 
-      <div className="text-xs mt-3 text-cyan-100 opacity-70 text-center">
-        Explore celestial bodies • Images via Unsplash
+        <div className="text-xs text-cyan-100 opacity-70 text-center">
+          Explore celestial bodies • Images via Unsplash
+        </div>
       </div>
 
       {/* Zoom Modal */}
