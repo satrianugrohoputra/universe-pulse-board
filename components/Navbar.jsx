@@ -1,5 +1,5 @@
 
-import Link from "next/link";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   return (
@@ -7,7 +7,7 @@ export default function Navbar() {
       <div className="flex-1 flex items-center gap-4">
         <span className="text-lg md:text-2xl font-extrabold tracking-widest text-accent">AstroExplorer</span>
         <div className="hidden md:flex gap-6 ml-8">
-          <Link href="/" className="hover:text-accent font-medium">Today</Link>
+          <Link to="/" className="hover:text-accent font-medium">Today</Link>
           <a href="#journal" className="hover:text-accent font-medium">Journal</a>
           <a href="#events" className="hover:text-accent font-medium">Events</a>
         </div>
