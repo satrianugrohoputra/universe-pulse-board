@@ -49,14 +49,6 @@ export default function EPICCard() {
 
   return (
     <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative">
-      {/* Back to Dashboard Button */}
-      <button
-        className="absolute top-4 left-4 z-20 bg-black/70 hover:bg-cyan-600 text-white p-2 rounded-lg text-xs font-medium transition-colors"
-        onClick={() => window.location.reload()}
-      >
-        ← Dashboard
-      </button>
-
       <div
         className="w-full h-56 rounded-lg overflow-hidden cursor-pointer relative group"
         onClick={() => setModal(true)}

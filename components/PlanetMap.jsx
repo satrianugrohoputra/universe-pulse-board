@@ -48,14 +48,6 @@ export default function PlanetMap() {
 
   return (
     <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col">
-      {/* Back to Dashboard Button */}
-      <button
-        className="absolute top-4 left-4 z-20 bg-black/70 hover:bg-cyan-600 text-white p-2 rounded-lg text-xs font-medium transition-colors"
-        onClick={() => window.location.reload()}
-      >
-        ← Dashboard
-      </button>
-
       <div className="flex justify-between items-center mb-4">
         <span className="font-bold text-white text-lg">Planetary Explorer</span>
         <select
