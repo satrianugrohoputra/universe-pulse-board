@@ -47,11 +47,11 @@ export default function PlanetMap() {
   };
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col min-h-[24rem] h-[24rem]">
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col min-h-[26rem] h-[26rem] overflow-hidden">
       <div className="flex justify-between items-center mb-4">
-        <span className="font-bold text-white text-lg">Planetary Explorer</span>
+        <span className="font-bold text-white text-lg truncate">Planetary Explorer</span>
         <select
-          className="bg-black/50 border border-cyan-400/50 text-white rounded-lg px-3 py-1 focus:outline-none focus:border-cyan-400"
+          className="bg-black/50 border border-cyan-400/50 text-white rounded-lg px-2 py-1 focus:outline-none focus:border-cyan-400 text-sm flex-shrink-0"
           value={selectedPlanet}
           onChange={e => setSelectedPlanet(e.target.value)}
         >
@@ -61,10 +61,10 @@ export default function PlanetMap() {
         </select>
       </div>
       
-      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-black/30 mb-4 group">
+      <div className="relative w-full h-40 rounded-lg overflow-hidden bg-black/30 mb-4 group flex-shrink-0">
         {!imageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
+            <div className="animate-spin w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full" />
           </div>
         )}
         <img
@@ -78,26 +78,28 @@ export default function PlanetMap() {
         />
         
         {/* Zoom Indicator */}
-        <div className="absolute top-4 right-4 bg-black/60 px-2 py-1 rounded text-xs text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute top-2 right-2 bg-black/60 px-2 py-1 rounded text-xs text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity">
           🔍 Click to zoom
         </div>
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4">
-          <h3 className="text-white font-bold text-xl mb-1">
+        <div className="absolute bottom-2 left-2 right-2">
+          <h3 className="text-white font-bold text-lg mb-1 truncate">
             {planetData[selectedPlanet].name}
           </h3>
-          <p className="text-cyan-200 text-sm">
+          <p className="text-cyan-200 text-sm line-clamp-2">
             {planetData[selectedPlanet].info}
           </p>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col justify-between min-h-0">
-        <div className="bg-black/30 rounded-lg p-3 mb-3">
+        <div className="bg-black/30 rounded-lg p-3 mb-3 flex-1 min-h-0 flex flex-col">
           <div className="text-cyan-300 text-sm font-medium mb-1">Did you know?</div>
-          <div className="text-white text-sm transition-all duration-500">
-            {planetData[selectedPlanet].facts[currentFactIndex]}
+          <div className="text-white text-sm transition-all duration-500 flex-1 flex items-center">
+            <span className="break-words">
+              {planetData[selectedPlanet].facts[currentFactIndex]}
+            </span>
           </div>
         </div>
 
@@ -113,7 +115,7 @@ export default function PlanetMap() {
         </div>
 
         <div className="text-xs text-cyan-100 opacity-70 text-center">
-          Explore celestial bodies • Images via Unsplash
+          <span className="break-words">Explore celestial bodies • Images via Unsplash</span>
         </div>
       </div>
 
@@ -139,8 +141,8 @@ export default function PlanetMap() {
               ✕
             </button>
             <div className="absolute bottom-4 left-4 right-4 bg-black/80 p-3 rounded-lg">
-              <div className="text-cyan-300 font-bold text-lg">{planetData[selectedPlanet].name}</div>
-              <div className="text-white text-sm mt-1">{planetData[selectedPlanet].info}</div>
+              <div className="text-cyan-300 font-bold text-lg break-words">{planetData[selectedPlanet].name}</div>
+              <div className="text-white text-sm mt-1 break-words">{planetData[selectedPlanet].info}</div>
             </div>
           </div>
         </div>

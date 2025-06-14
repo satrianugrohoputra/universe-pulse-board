@@ -50,9 +50,9 @@ function CryptoChart({ coin, timeframe }) {
   // Show visible warning if timeframe not supported.
   if (blockApiMax) {
     return (
-      <div className="w-full h-48 bg-black/20 rounded-lg flex flex-col items-center justify-center gap-3">
-        <div className="text-yellow-400 font-semibold">Timeframe not available</div>
-        <div className="text-xs text-white/70 max-w-xs text-center">
+      <div className="w-full h-40 bg-black/20 rounded-lg flex flex-col items-center justify-center gap-2 p-4">
+        <div className="text-yellow-400 font-semibold text-sm">Timeframe not available</div>
+        <div className="text-xs text-white/70 text-center">
           Due to CoinGecko API limits, charts beyond 1 year require a paid plan. Please select a shorter range.
         </div>
       </div>
@@ -61,10 +61,10 @@ function CryptoChart({ coin, timeframe }) {
 
   if (isLoading) {
     return (
-      <div className="w-full h-48 bg-black/20 rounded-lg flex items-center justify-center">
+      <div className="w-full h-40 bg-black/20 rounded-lg flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
-          <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
-          <div className="text-cyan-300 text-sm">Loading chart...</div>
+          <div className="animate-spin w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full" />
+          <div className="text-cyan-300 text-xs">Loading chart...</div>
         </div>
       </div>
     );
@@ -72,7 +72,7 @@ function CryptoChart({ coin, timeframe }) {
 
   if (error || !data?.prices || !Array.isArray(data.prices) || data.prices.length === 0) {
     return (
-      <div className="w-full h-48 bg-black/20 rounded-lg flex items-center justify-center">
+      <div className="w-full h-40 bg-black/20 rounded-lg flex items-center justify-center p-4">
         <div className="text-center">
           <div className="text-red-400 text-sm mb-2">Failed to load chart data</div>
           <div className="text-xs text-white/60">
@@ -92,46 +92,44 @@ function CryptoChart({ coin, timeframe }) {
   }));
 
   return (
-    <div className="w-full">
-      <div className="w-full h-48 bg-black/20 rounded-lg p-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <XAxis
-              dataKey="time"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fill: '#94a3b8' }}
-              interval="preserveStartEnd"
-            />
-            <YAxis
-              domain={['dataMin * 0.95', 'dataMax * 1.05']}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 10, fill: '#94a3b8' }}
-              tickFormatter={(value) => `$${value.toLocaleString()}`}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                border: '1px solid #06b6d4',
-                borderRadius: '8px',
-                fontSize: '12px',
-                color: '#ffffff'
-              }}
-              formatter={(value) => [`$${value.toLocaleString()}`, "USD"]}
-              labelFormatter={(label) => `Time: ${label}`}
-            />
-            <Line
-              type="monotone"
-              dataKey="price"
-              stroke="#0ff"
-              strokeWidth={2}
-              dot={false}
-              strokeLinecap="round"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+    <div className="w-full h-40 bg-black/20 rounded-lg p-3">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
+          <XAxis
+            dataKey="time"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 9, fill: '#94a3b8' }}
+            interval="preserveStartEnd"
+          />
+          <YAxis
+            domain={['dataMin * 0.95', 'dataMax * 1.05']}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 9, fill: '#94a3b8' }}
+            tickFormatter={(value) => `$${value.toLocaleString()}`}
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              border: '1px solid #06b6d4',
+              borderRadius: '8px',
+              fontSize: '11px',
+              color: '#ffffff'
+            }}
+            formatter={(value) => [`$${value.toLocaleString()}`, "USD"]}
+            labelFormatter={(label) => `Time: ${label}`}
+          />
+          <Line
+            type="monotone"
+            dataKey="price"
+            stroke="#0ff"
+            strokeWidth={2}
+            dot={false}
+            strokeLinecap="round"
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -178,17 +176,18 @@ function CryptoCard() {
   }
 
   return (
-    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 min-h-[24rem] h-[24rem] flex flex-col">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="font-bold text-white text-lg">Cryptocurrency Pulse</h2>
-        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+    <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 min-h-[26rem] h-[26rem] flex flex-col overflow-hidden">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-bold text-white text-lg truncate">Cryptocurrency Pulse</h2>
+        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse flex-shrink-0" />
       </div>
-      <div className="flex gap-2 mb-6">
+      
+      <div className="flex gap-2 mb-4 overflow-x-auto">
         {coins.map((coin) => (
           <button
             key={coin.id}
             onClick={() => setSelectedCoin(coin)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`px-3 py-2 rounded-lg font-medium transition-all duration-200 flex-shrink-0 text-sm ${
               selectedCoin.id === coin.id
                 ? 'bg-cyan-600 text-white shadow-lg'
                 : 'bg-black/30 text-cyan-300 hover:bg-black/50'
@@ -198,21 +197,22 @@ function CryptoCard() {
           </button>
         ))}
       </div>
+
       {/* Price + 24h change area */}
-      <div className="mb-4 text-center min-h-[56px]">
+      <div className="mb-4 text-center min-h-[48px] flex flex-col justify-center">
         {priceLoading ? (
           <div className="flex flex-col gap-2 items-center">
-            <div className="animate-pulse bg-cyan-400/40 h-8 w-32 rounded" />
-            <div className="animate-pulse bg-cyan-500/30 h-5 w-16 rounded" />
+            <div className="animate-pulse bg-cyan-400/40 h-6 w-24 rounded" />
+            <div className="animate-pulse bg-cyan-500/30 h-4 w-16 rounded" />
           </div>
         ) : priceError || price == null ? (
-          <div>
-            <div className="text-red-400 font-semibold text-lg">Failed to load price</div>
-            <div className="text-xs text-white/60">Data source: {fallbackSource || "Unknown"}<br />Server/API error</div>
+          <div className="px-2">
+            <div className="text-red-400 font-semibold text-base">Failed to load price</div>
+            <div className="text-xs text-white/60 break-words">Data source: {fallbackSource || "Unknown"}<br />Server/API error</div>
           </div>
         ) : (
           <>
-            <div className="text-3xl font-bold text-cyan-300">
+            <div className="text-2xl font-bold text-cyan-300 break-words">
               ${typeof price === "number" ? price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "?"}
             </div>
             <div className={`text-sm font-medium ${isChangePositive ? 'text-green-400' : 'text-red-400'}`}>
@@ -221,15 +221,19 @@ function CryptoCard() {
           </>
         )}
       </div>
+
       {/* Chart */}
-      <CryptoChart coin={selectedCoin} timeframe={selectedTimeframe} />
+      <div className="flex-1 min-h-0 mb-4">
+        <CryptoChart coin={selectedCoin} timeframe={selectedTimeframe} />
+      </div>
+
       {/* Timeframe picker */}
-      <div className="flex gap-2 mt-6 justify-center flex-wrap">
+      <div className="flex gap-1 justify-center flex-wrap mb-3">
         {timeframes.map((timeframe) => (
           <button
             key={timeframe.key}
             onClick={() => setSelectedTimeframe(timeframe)}
-            className={`px-3 py-1 rounded text-xs font-medium transition-all duration-200 ${
+            className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${
               selectedTimeframe.key === timeframe.key
                 ? 'bg-cyan-600 text-white shadow-lg border-2 border-cyan-400'
                 : 'bg-black/30 text-cyan-300 hover:bg-black/50 border border-transparent'
@@ -241,14 +245,15 @@ function CryptoCard() {
           </button>
         ))}
       </div>
-      <div className="text-xs text-cyan-100 opacity-80 mt-4 text-center">
-        <div className="flex items-center justify-center gap-2">
-          <span>Realtime Price: {fallbackSource || "API (auto)"}</span>
+
+      <div className="text-xs text-cyan-100 opacity-80 text-center">
+        <div className="flex items-center justify-center gap-1 flex-wrap">
+          <span className="whitespace-nowrap">Realtime: {fallbackSource || "API"}</span>
           <span>•</span>
-          <span>Chart: CoinGecko (≤1y only)</span>
+          <span className="whitespace-nowrap">Chart: CoinGecko</span>
           <span>•</span>
-          <span>Updates every minute</span>
-          <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse ml-1" />
+          <span className="whitespace-nowrap">Updates/min</span>
+          <div className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse ml-1 flex-shrink-0" />
         </div>
       </div>
     </div>
