@@ -37,6 +37,7 @@ export default function EventMap() {
   const [mapKey, setMapKey] = useState(0);
 
   useEffect(() => {
+    console.log("Fetching EONET events...");
     fetch("https://eonet.gsfc.nasa.gov/api/v3/events")
       .then(r => {
         if (!r.ok) throw new Error("Failed to fetch");
@@ -55,6 +56,7 @@ export default function EventMap() {
   }, []);
 
   const handleContinentChange = (continent) => {
+    console.log("Changing continent to:", continent);
     setSelectedContinent(continent);
     setMapKey(prev => prev + 1); // Force map re-render with new center and zoom
   };
@@ -69,17 +71,17 @@ export default function EventMap() {
       
       switch (continent) {
         case "North America":
-          return lat >= 15 && lat <= 80 && lng >= -180 && lng <= -50;
+          return lat >= 15 && lat <= 85 && lng >= -170 && lng <= -50;
         case "South America":
-          return lat >= -60 && lat <= 15 && lng >= -90 && lng <= -30;
+          return lat >= -60 && lat <= 15 && lng >= -85 && lng <= -30;
         case "Europe":
           return lat >= 35 && lat <= 75 && lng >= -15 && lng <= 60;
         case "Africa":
-          return lat >= -35 && lat <= 40 && lng >= -20 && lng <= 55;
+          return lat >= -40 && lat <= 40 && lng >= -20 && lng <= 55;
         case "Asia":
           return lat >= 5 && lat <= 80 && lng >= 25 && lng <= 180;
         case "Australia/Oceania":
-          return lat >= -50 && lat <= 0 && lng >= 110 && lng <= 180;
+          return lat >= -50 && lat <= 10 && lng >= 110 && lng <= 180;
         default:
           return true;
       }
@@ -91,6 +93,7 @@ export default function EventMap() {
   }
 
   const filteredEvents = filterEventsByContinent(events, selectedContinent);
+  console.log(`Filtered events for ${selectedContinent}:`, filteredEvents.length);
 
   if (error) {
     return (
@@ -159,7 +162,7 @@ export default function EventMap() {
                         <div className="text-xs opacity-70 mt-1">{evt.description}</div>
                       )}
                       {evt.link && (
-                        <a href={evt.link} className="text-accent underline text-xs mt-1 block" target="_blank" rel="noopener noreferrer">More Info</a>
+                        <a href={evt.link} className="text-cyan-400 underline text-xs mt-1 block" target="_blank" rel="noopener noreferrer">More Info</a>
                       )}
                     </Popup>
                   </Marker>

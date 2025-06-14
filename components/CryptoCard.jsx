@@ -3,8 +3,6 @@ import useSWR from "swr";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useState } from "react";
 
-const COINGECKO_BASE_URL = "https://api.coingecko.com/api/v3";
-
 const timeframes = [
   { key: "1", label: "1HR", days: "1", interval: "hourly" },
   { key: "1d", label: "1D", days: "1", interval: "hourly" },
@@ -20,30 +18,50 @@ const coins = [
 ];
 
 const fetcher = async (url) => {
+  console.log("Fetching crypto data from:", url);
   const response = await fetch(url);
-  if (!response.ok) throw new Error("Failed to fetch");
-  return response.json();
+  if (!response.ok) {
+    console.error("Crypto fetch failed:", response.status, response.statusText);
+    throw new Error(`Failed to fetch: ${response.status}`);
+  }
+  const data = await response.json();
+  console.log("Crypto data received:", data);
+  return data;
 };
 
 function CryptoChart({ coin, timeframe }) {
   const { data, error, isLoading } = useSWR(
-    `${COINGECKO_BASE_URL}/coins/${coin.id}/market_chart?vs_currency=usd&days=${timeframe.days}&interval=${timeframe.interval}`,
+    `https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=${timeframe.days}&interval=${timeframe.interval}`,
     fetcher,
-    { refreshInterval: 60000 }
+    { 
+      refreshInterval: 60000,
+      onError: (error) => {
+        console.error("SWR error for crypto data:", error);
+      }
+    }
   );
 
   if (isLoading) {
     return (
       <div className="w-full h-64 bg-black/20 rounded-lg flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
+          <div className="text-cyan-300 text-sm">Loading {coin.symbol} data...</div>
+        </div>
       </div>
     );
   }
 
   if (error || !data?.prices) {
+    console.error("Chart error:", error);
     return (
       <div className="w-full h-64 bg-black/20 rounded-lg flex items-center justify-center">
-        <div className="text-red-400 text-sm">Failed to load chart data</div>
+        <div className="text-center">
+          <div className="text-red-400 text-sm mb-2">Failed to load chart data</div>
+          <div className="text-xs text-white/60">
+            {error?.message || "API might be rate limited"}
+          </div>
+        </div>
       </div>
     );
   }
@@ -58,7 +76,7 @@ function CryptoChart({ coin, timeframe }) {
 
   const currentPrice = chartData[chartData.length - 1]?.price || 0;
   const firstPrice = chartData[0]?.price || 0;
-  const priceChange = ((currentPrice - firstPrice) / firstPrice) * 100;
+  const priceChange = firstPrice > 0 ? ((currentPrice - firstPrice) / firstPrice) * 100 : 0;
   const isPositive = priceChange >= 0;
 
   return (
