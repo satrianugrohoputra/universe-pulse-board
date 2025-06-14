@@ -23,6 +23,7 @@ export default function PlanetMap() {
   const [selectedPlanet, setSelectedPlanet] = useState("moon");
   const [imageLoaded, setImageLoaded] = useState(false);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
+  const [zoomedImage, setZoomedImage] = useState(null);
 
   useEffect(() => {
     setImageLoaded(false);
@@ -47,6 +48,14 @@ export default function PlanetMap() {
 
   return (
     <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 flex flex-col">
+      {/* Back to Dashboard Button */}
+      <button
+        className="absolute top-4 left-4 z-20 bg-black/70 hover:bg-cyan-600 text-white p-2 rounded-lg text-xs font-medium transition-colors"
+        onClick={() => window.location.reload()}
+      >
+        ← Dashboard
+      </button>
+
       <div className="flex justify-between items-center mb-4">
         <span className="font-bold text-white text-lg">Planetary Explorer</span>
         <select
@@ -60,7 +69,7 @@ export default function PlanetMap() {
         </select>
       </div>
       
-      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-black/30 mb-4">
+      <div className="relative w-full h-48 rounded-lg overflow-hidden bg-black/30 mb-4 group">
         {!imageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="animate-spin w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full" />
@@ -69,11 +78,18 @@ export default function PlanetMap() {
         <img
           src={planetImages[selectedPlanet]}
           alt={planetData[selectedPlanet].name}
-          className={`w-full h-full object-cover transition-opacity duration-500 ${
+          className={`w-full h-full object-cover transition-all duration-500 cursor-pointer hover:scale-110 ${
             imageLoaded ? 'opacity-100' : 'opacity-0'
           }`}
           onLoad={() => setImageLoaded(true)}
+          onClick={() => setZoomedImage(planetImages[selectedPlanet])}
         />
+        
+        {/* Zoom Indicator */}
+        <div className="absolute top-4 right-4 bg-black/60 px-2 py-1 rounded text-xs text-cyan-300 opacity-0 group-hover:opacity-100 transition-opacity">
+          🔍 Click to zoom
+        </div>
+        
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute bottom-4 left-4 right-4">
           <h3 className="text-white font-bold text-xl mb-1">
@@ -106,6 +122,35 @@ export default function PlanetMap() {
       <div className="text-xs mt-3 text-cyan-100 opacity-70 text-center">
         Explore celestial bodies • Images via Unsplash
       </div>
+
+      {/* Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 z-50 backdrop-blur bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setZoomedImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img 
+              src={zoomedImage} 
+              alt={planetData[selectedPlanet].name} 
+              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl border-4 border-cyan-400"
+            />
+            <button
+              className="absolute top-4 right-4 bg-black/70 hover:bg-red-600 text-white p-2 rounded-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                setZoomedImage(null);
+              }}
+            >
+              ✕
+            </button>
+            <div className="absolute bottom-4 left-4 right-4 bg-black/80 p-3 rounded-lg">
+              <div className="text-cyan-300 font-bold text-lg">{planetData[selectedPlanet].name}</div>
+              <div className="text-white text-sm mt-1">{planetData[selectedPlanet].info}</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

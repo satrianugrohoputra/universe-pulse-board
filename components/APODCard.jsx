@@ -8,6 +8,7 @@ const fetcher = url => fetch(url).then(res => res.json());
 export default function APODCard() {
   const [expanded, setExpanded] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [zoomedImage, setZoomedImage] = useState(null);
   
   // Fetch last 5 days of APOD
   const { data, error, isLoading } = useSWR(
@@ -20,7 +21,7 @@ export default function APODCard() {
     
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % data.length);
-    }, 4000); // Change image every 4 seconds
+    }, 8000); // Slower transition - changed from 4000ms to 8000ms
 
     return () => clearInterval(interval);
   }, [data]);
@@ -47,12 +48,21 @@ export default function APODCard() {
 
   return (
     <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[22rem] overflow-hidden">
+      {/* Back to Dashboard Button */}
+      <button
+        className="absolute top-4 left-4 z-20 bg-black/70 hover:bg-cyan-600 text-white p-2 rounded-lg text-xs font-medium transition-colors"
+        onClick={() => window.location.reload()}
+      >
+        ← Dashboard
+      </button>
+
       <div className="relative flex-1">
         {currentAPOD.media_type === "image" ? (
           <img 
             src={currentAPOD.url} 
             alt={currentAPOD.title} 
-            className="w-full h-56 object-cover rounded-lg shadow mb-2 transition-opacity duration-500" 
+            className="w-full h-56 object-cover rounded-lg shadow mb-2 transition-opacity duration-500 cursor-pointer hover:opacity-90" 
+            onClick={() => setZoomedImage(currentAPOD.url)}
           />
         ) : (
           <div className="w-full aspect-video h-56 mb-2 rounded-lg overflow-hidden bg-black/80 flex items-center justify-center">
@@ -86,7 +96,7 @@ export default function APODCard() {
           </button>
         </div>
 
-        <div className="absolute left-4 top-4 bg-black/60 px-3 py-1 rounded-lg font-semibold text-lg text-white shadow max-w-[60%]">
+        <div className="absolute left-4 top-16 bg-black/60 px-3 py-1 rounded-lg font-semibold text-lg text-white shadow max-w-[60%]">
           {currentAPOD.title}
         </div>
         
@@ -130,6 +140,31 @@ export default function APODCard() {
           ))}
         </div>
       </div>
+
+      {/* Zoom Modal */}
+      {zoomedImage && (
+        <div 
+          className="fixed inset-0 z-50 backdrop-blur bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setZoomedImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img 
+              src={zoomedImage} 
+              alt="Zoomed APOD" 
+              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl border-4 border-cyan-400"
+            />
+            <button
+              className="absolute top-4 right-4 bg-black/70 hover:bg-red-600 text-white p-2 rounded-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                setZoomedImage(null);
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
