@@ -16,11 +16,9 @@ export default function EPICCard() {
 
   useEffect(() => {
     if (!data || data.length === 0) return;
-    
     const interval = setInterval(() => {
       setIndex(prev => (prev + 1) % Math.min(data.length, 5));
-    }, 6000); // Auto-rotate every 6 seconds
-
+    }, 6000); 
     return () => clearInterval(interval);
   }, [data]);
 
@@ -65,17 +63,13 @@ export default function EPICCard() {
             animationIterationCount: 'infinite'
           }}
         />
-        
-        {/* Earth Info Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="absolute bottom-4 left-4 right-4 text-white">
             <div className="text-sm font-semibold mb-1">🌍 Earth from Space</div>
             <div className="text-xs opacity-80">Click to explore full size</div>
           </div>
         </div>
-
         <div className="absolute top-4 right-4 flex gap-2">
-          {/* Rotation Toggle */}
           <button
             className={`p-2 rounded text-xs font-medium transition-colors ${
               isRotating 
@@ -89,7 +83,6 @@ export default function EPICCard() {
           >
             {isRotating ? '⏸️' : '▶️'}
           </button>
-          
           <button
             aria-label="Previous"
             className="bg-black/60 hover:bg-cyan-600 text-white p-1 rounded"
@@ -112,7 +105,6 @@ export default function EPICCard() {
           </button>
         </div>
       </div>
-      
       <div className="mt-3">
         <div className="font-semibold text-cyan-300 text-sm flex items-center gap-2">
           <span>📅 {img.date}</span>
@@ -123,15 +115,14 @@ export default function EPICCard() {
           Distance: ~1.5M km • Natural color composite
         </div>
       </div>
-
-      {/* Full Screen Modal */}
+      {/* MODAL: only close button, no dashboard/back */}
       {modal && (
         <div className="fixed inset-0 z-50 backdrop-blur bg-black/90 flex items-center justify-center p-4" onClick={() => setModal(false)}>
           <div className="relative max-w-[90vw] max-h-[90vh]">
             <img 
               src={imgUrl} 
               alt={img.caption} 
-              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl border-4 border-cyan-400" 
+              className="max-w-full max-h-full object-contain rounded-xl shadow-2xl border-4 border-cyan-400"
             />
             <button
               className="absolute top-4 right-4 bg-black/70 hover:bg-red-600 text-white p-2 rounded-full"

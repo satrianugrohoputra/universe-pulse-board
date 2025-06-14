@@ -17,16 +17,26 @@ const coins = [
   { id: "ethereum", symbol: "ETH", name: "Ethereum" }
 ];
 
+// Improved fetcher: logs errors and handles edge cases.
 const fetcher = async (url) => {
-  console.log("Fetching crypto data from:", url);
-  const response = await fetch(url);
-  if (!response.ok) {
-    console.error("Crypto fetch failed:", response.status, response.statusText);
-    throw new Error(`Failed to fetch: ${response.status}`);
+  console.log("[CryptoCard] Fetching crypto data from:", url);
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error("[CryptoCard] Crypto fetch failed:", response.status, response.statusText);
+      throw new Error(`Failed to fetch: ${response.status}`);
+    }
+    const data = await response.json();
+    if (!data || !data.prices) {
+      console.error("[CryptoCard] No data.prices:", data);
+      throw new Error("No price data available");
+    }
+    console.log("[CryptoCard] Crypto data received:", data);
+    return data;
+  } catch (e) {
+    console.error("[CryptoCard] Fetcher exception:", e);
+    throw e;
   }
-  const data = await response.json();
-  console.log("Crypto data received:", data);
-  return data;
 };
 
 function CryptoChart({ coin, timeframe }) {
@@ -52,14 +62,14 @@ function CryptoChart({ coin, timeframe }) {
     );
   }
 
-  if (error || !data?.prices) {
-    console.error("Chart error:", error);
+  if (error || !data?.prices || !Array.isArray(data.prices) || data.prices.length === 0) {
+    console.error("[CryptoCard] Chart error:", error, data);
     return (
       <div className="w-full h-64 bg-black/20 rounded-lg flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 text-sm mb-2">Failed to load chart data</div>
           <div className="text-xs text-white/60">
-            {error?.message || "API might be rate limited"}
+            {error?.message || "API might be rate limited or data unavailable"}
           </div>
         </div>
       </div>
@@ -90,7 +100,6 @@ function CryptoChart({ coin, timeframe }) {
           {isPositive ? '+' : ''}{priceChange.toFixed(2)}% ({timeframe.label})
         </div>
       </div>
-
       {/* Chart */}
       <div className="w-full h-64 bg-black/20 rounded-lg p-4">
         <ResponsiveContainer width="100%" height="100%">
@@ -137,17 +146,14 @@ function CryptoChart({ coin, timeframe }) {
 
 export default function CryptoCard() {
   const [selectedCoin, setSelectedCoin] = useState(coins[0]);
-  const [selectedTimeframe, setSelectedTimeframe] = useState(timeframes[1]); // Default to 1D
+  const [selectedTimeframe, setSelectedTimeframe] = useState(timeframes[1]);
 
   return (
     <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 min-h-[24rem]">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-bold text-white text-lg">Cryptocurrency Pulse</h2>
         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
       </div>
-
-      {/* Coin Selection Tabs */}
       <div className="flex gap-2 mb-6">
         {coins.map((coin) => (
           <button
@@ -163,11 +169,7 @@ export default function CryptoCard() {
           </button>
         ))}
       </div>
-
-      {/* Chart Component */}
       <CryptoChart coin={selectedCoin} timeframe={selectedTimeframe} />
-
-      {/* Timeframe Controls */}
       <div className="flex gap-2 mt-6 justify-center flex-wrap">
         {timeframes.map((timeframe) => (
           <button
@@ -183,8 +185,6 @@ export default function CryptoCard() {
           </button>
         ))}
       </div>
-
-      {/* Footer */}
       <div className="text-xs text-cyan-100 opacity-80 mt-4 text-center">
         <div className="flex items-center justify-center gap-2">
           <span>Powered by CoinGecko</span>

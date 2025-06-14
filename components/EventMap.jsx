@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, LayersControl, LayerGroup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 const legendClasses = {
@@ -56,19 +56,17 @@ export default function EventMap() {
   }, []);
 
   const handleContinentChange = (continent) => {
-    console.log("Changing continent to:", continent);
     setSelectedContinent(continent);
-    setMapKey(prev => prev + 1); // Force map re-render with new center and zoom
+    setMapKey(prev => prev + 1);
   };
 
+  // Filtering events per continent by coordinate
   const filterEventsByContinent = (events, continent) => {
     if (continent === "Global") return events;
-    
+
     return events.filter(evt => {
       if (!evt.geometry || !evt.geometry[0] || !evt.geometry[0].coordinates) return false;
-      
       const [lng, lat] = evt.geometry[0].coordinates;
-      
       switch (continent) {
         case "North America":
           return lat >= 15 && lat <= 85 && lng >= -170 && lng <= -50;
@@ -93,7 +91,6 @@ export default function EventMap() {
   }
 
   const filteredEvents = filterEventsByContinent(events, selectedContinent);
-  console.log(`Filtered events for ${selectedContinent}:`, filteredEvents.length);
 
   if (error) {
     return (
@@ -108,21 +105,32 @@ export default function EventMap() {
     <div id="events" className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20">
       <div className="flex justify-between items-center mb-2">
         <h2 className="font-bold text-white">Natural Events Map (EONET)</h2>
-        <select
-          className="bg-black/50 border border-cyan-400/50 text-white rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-cyan-400"
-          value={selectedContinent}
-          onChange={e => handleContinentChange(e.target.value)}
-        >
-          {Object.keys(continents).map(continent => (
-            <option key={continent} value={continent}>
-              {continent === "Global" ? "🌍" : continent === "North America" ? "🇺🇸" : 
-               continent === "South America" ? "🇧🇷" : continent === "Europe" ? "🇪🇺" :
-               continent === "Africa" ? "🌍" : continent === "Asia" ? "🇨🇳" : "🇦🇺"} {continent}
-            </option>
-          ))}
-        </select>
+        {/* More visible and user-friendly continent select dropdown */}
+        <div className="relative">
+          <select
+            className="bg-slate-900 border-2 border-cyan-400/70 text-white rounded-xl px-4 py-2 pr-8 text-base font-medium shadow-sm focus:outline-none focus:border-cyan-400 transition-all ease-in-out duration-150 cursor-pointer min-w-[170px] appearance-none"
+            value={selectedContinent}
+            onChange={e => handleContinentChange(e.target.value)}
+            style={{
+              boxShadow: '0 2px 16px 0 rgba(6,182,212,0.1)',
+              backgroundImage:
+                'linear-gradient(45deg,rgba(6,182,212,0.13),rgba(28,28,38,0.85))'
+            }}
+            aria-label="Select continent"
+          >
+            {Object.keys(continents).map(continent => (
+              <option key={continent} value={continent}>
+                {continent === "Global" ? "🌍" : continent === "North America" ? "🇺🇸" :
+                 continent === "South America" ? "🇧🇷" : continent === "Europe" ? "🇪🇺" :
+                 continent === "Africa" ? "🌍" : continent === "Asia" ? "🇨🇳" : "🇦🇺"} {continent}
+              </option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-cyan-300">
+            ▼
+          </span>
+        </div>
       </div>
-      
       <div className="relative">
         <div className="w-full h-56 bg-black/60 rounded-lg overflow-hidden">
           {loaded ? (
@@ -132,9 +140,18 @@ export default function EventMap() {
               zoom={continents[selectedContinent].zoom}
               style={{ width: "100%", height: "14rem", borderRadius: "0.5rem" }}
               className="leaflet-container"
-              scrollWheelZoom={false}
+              scrollWheelZoom={true} // easier to zoom
               dragging={true}
-              zoomControl={true}
+              doubleClickZoom={true}
+              closePopupOnClick={false}
+              worldCopyJump={true}
+              tap={false}           // disables mobile tap-delay
+              inertia={true}
+              inertiaDeceleration={3500}
+              inertiaMaxSpeed={1750}
+              zoomSnap={0.25}
+              zoomDelta={0.25}
+              minZoom={2}
               attributionControl={false}
             >
               <TileLayer
