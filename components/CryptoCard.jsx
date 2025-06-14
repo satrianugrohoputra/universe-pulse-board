@@ -1,17 +1,15 @@
-
 import useSWR from "swr";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useState } from "react";
 import { fetchCryptoData } from "../src/utils/fetchCryptoData";
 
-// Timeframes - REMOVE MAX as CoinGecko requires paid for >1095 days
+// Timeframes - Removed 2Y to prevent API errors
 const timeframes = [
   { key: "1h", label: "1HR", days: "1", interval: "hourly", warn: false },
   { key: "1d", label: "1D", days: "1", interval: "hourly", warn: false },
   { key: "7d", label: "1W", days: "7", interval: "daily", warn: false },
   { key: "1m", label: "1M", days: "30", interval: "daily", warn: false },
   { key: "1y", label: "1Y", days: "365", interval: "daily", warn: false },
-  { key: "2y", label: "2Y", days: "730", interval: "daily", warn: true },
 ];
 
 // Supported coins
@@ -32,7 +30,7 @@ const fetcher = async (url) => {
  * Chart only - CoinGecko for historic data (limited)
  */
 function CryptoChart({ coin, timeframe }) {
-  const blockApiMax = timeframe.key === "max" || parseInt(timeframe.days) > 1095;
+  const blockApiMax = parseInt(timeframe.days) > 1095;
   const chartDataSWR = useSWR(
     !blockApiMax
       ? `https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=${timeframe.days}&interval=${timeframe.interval}`
@@ -46,6 +44,8 @@ function CryptoChart({ coin, timeframe }) {
     }
   );
   const { data, error, isLoading } = chartDataSWR;
+
+  console.log("[CryptoChart] Timeframe:", timeframe, "Data:", data);
 
   // Show visible warning if timeframe not supported.
   if (blockApiMax) {
@@ -83,13 +83,31 @@ function CryptoChart({ coin, timeframe }) {
     );
   }
 
-  const chartData = data.prices.map(([timestamp, price], index) => ({
-    time: timeframe.days === "1"
-      ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : new Date(timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }),
-    price: price,
-    timestamp: timestamp
-  }));
+  // Enhanced chart data processing based on timeframe
+  const chartData = data.prices.map(([timestamp, price], index) => {
+    let timeLabel;
+    const date = new Date(timestamp);
+    
+    // Format time labels based on timeframe
+    if (timeframe.key === "1h" || timeframe.key === "1d") {
+      // For hourly data, show time
+      timeLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (timeframe.key === "7d") {
+      // For weekly data, show day and date
+      timeLabel = date.toLocaleDateString([], { weekday: 'short', day: 'numeric' });
+    } else {
+      // For monthly and yearly data, show month and day
+      timeLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+
+    return {
+      time: timeLabel,
+      price: price,
+      timestamp: timestamp
+    };
+  });
+
+  console.log("[CryptoChart] Processed chart data:", chartData.length, "points");
 
   return (
     <div className="w-full h-40 bg-black/20 rounded-lg p-3">
@@ -136,9 +154,11 @@ function CryptoChart({ coin, timeframe }) {
 
 function CryptoCard() {
   const [selectedCoin, setSelectedCoin] = useState(coins[0]);
-  // Set default to "1D" (never "max" or >1y)
+  // Set default to "1D" 
   const [selectedTimeframe, setSelectedTimeframe] = useState(timeframes[1]);
   const [fallbackSource, setFallbackSource] = useState(null);
+
+  console.log("[CryptoCard] Selected timeframe:", selectedTimeframe);
 
   // Server data (current price, % 24h) uses fetchCryptoData util
   const {
@@ -227,12 +247,15 @@ function CryptoCard() {
         <CryptoChart coin={selectedCoin} timeframe={selectedTimeframe} />
       </div>
 
-      {/* Timeframe picker */}
+      {/* Timeframe picker - Updated to remove 2Y */}
       <div className="flex gap-1 justify-center flex-wrap mb-3">
         {timeframes.map((timeframe) => (
           <button
             key={timeframe.key}
-            onClick={() => setSelectedTimeframe(timeframe)}
+            onClick={() => {
+              console.log("[CryptoCard] Selecting timeframe:", timeframe);
+              setSelectedTimeframe(timeframe);
+            }}
             className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${
               selectedTimeframe.key === timeframe.key
                 ? 'bg-cyan-600 text-white shadow-lg border-2 border-cyan-400'
