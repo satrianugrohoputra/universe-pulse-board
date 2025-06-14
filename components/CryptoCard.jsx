@@ -1,15 +1,16 @@
+
 import useSWR from "swr";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { useState } from "react";
 import { fetchCryptoData } from "../src/utils/fetchCryptoData";
 
-// Timeframes - Removed 2Y to prevent API errors
+// CoinGecko requires interval=hourly for <=90 days, daily for longer.
 const timeframes = [
-  { key: "1h", label: "1HR", days: "1", interval: "hourly", warn: false },
-  { key: "1d", label: "1D", days: "1", interval: "hourly", warn: false },
-  { key: "7d", label: "1W", days: "7", interval: "daily", warn: false },
-  { key: "1m", label: "1M", days: "30", interval: "daily", warn: false },
-  { key: "1y", label: "1Y", days: "365", interval: "daily", warn: false },
+  { key: "1h", label: "1HR", days: "1", interval: "hourly" },
+  { key: "1d", label: "1D", days: "1", interval: "hourly" },
+  { key: "7d", label: "1W", days: "7", interval: "hourly" }, // hourly for 7D!
+  { key: "1m", label: "1M", days: "30", interval: "daily" },
+  { key: "1y", label: "1Y", days: "365", interval: "daily" },
 ];
 
 // Supported coins
@@ -30,11 +31,23 @@ const fetcher = async (url) => {
  * Chart only - CoinGecko for historic data (limited)
  */
 function CryptoChart({ coin, timeframe }) {
+  // CoinGecko API doesn't support >1095 days (3 years), we block max.
   const blockApiMax = parseInt(timeframe.days) > 1095;
+
+  // Build the proper interval based on selected timeframe.
+  let interval = timeframe.interval;
+  // Safety logic: for up to 90 days, CoinGecko will return hourly data on interval=hourly, otherwise must be daily.
+  if (parseInt(timeframe.days) > 90) {
+    interval = "daily";
+  }
+
+  // CoinGecko sometimes returns very few points for some intervals, but this gets maximal points.
+  const chartUrl = !blockApiMax
+    ? `https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=${timeframe.days}&interval=${interval}`
+    : null;
+
   const chartDataSWR = useSWR(
-    !blockApiMax
-      ? `https://api.coingecko.com/api/v3/coins/${coin.id}/market_chart?vs_currency=usd&days=${timeframe.days}&interval=${timeframe.interval}`
-      : null,
+    chartUrl,
     fetcher,
     {
       refreshInterval: 60000,
@@ -44,8 +57,6 @@ function CryptoChart({ coin, timeframe }) {
     }
   );
   const { data, error, isLoading } = chartDataSWR;
-
-  console.log("[CryptoChart] Timeframe:", timeframe, "Data:", data);
 
   // Show visible warning if timeframe not supported.
   if (blockApiMax) {
@@ -83,31 +94,37 @@ function CryptoChart({ coin, timeframe }) {
     );
   }
 
-  // Enhanced chart data processing based on timeframe
-  const chartData = data.prices.map(([timestamp, price], index) => {
-    let timeLabel;
+  // Chart data: pick best label by timeframe.
+  const chartData = data.prices.map(([timestamp, price]) => {
     const date = new Date(timestamp);
-    
-    // Format time labels based on timeframe
+
+    let timeLabel = "";
     if (timeframe.key === "1h" || timeframe.key === "1d") {
-      // For hourly data, show time
       timeLabel = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else if (timeframe.key === "7d") {
-      // For weekly data, show day and date
-      timeLabel = date.toLocaleDateString([], { weekday: 'short', day: 'numeric' });
+      // Show both date and hour for more context
+      timeLabel = date.toLocaleDateString([], { weekday: 'short', day: 'numeric' }) + ' ' + date.toLocaleTimeString([], {hour: '2-digit'});
     } else {
-      // For monthly and yearly data, show month and day
       timeLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
     }
-
     return {
       time: timeLabel,
-      price: price,
-      timestamp: timestamp
+      price,
+      timestamp
     };
   });
 
-  console.log("[CryptoChart] Processed chart data:", chartData.length, "points");
+  // If CoinGecko only returned 1 value, don't even render chart
+  if (!chartData || chartData.length < 2) {
+    return (
+      <div className="w-full h-40 bg-black/20 rounded-lg flex items-center justify-center p-4">
+        <div className="text-cyan-200/80 text-center text-xs">
+          Not enough data for chart (CoinGecko API).<br/>
+          Try a different timeframe.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-40 bg-black/20 rounded-lg p-3">
@@ -121,7 +138,7 @@ function CryptoChart({ coin, timeframe }) {
             interval="preserveStartEnd"
           />
           <YAxis
-            domain={['dataMin * 0.95', 'dataMax * 1.05']}
+            domain={['dataMin * 0.98', 'dataMax * 1.02']}
             axisLine={false}
             tickLine={false}
             tick={{ fontSize: 9, fill: '#94a3b8' }}
@@ -154,11 +171,9 @@ function CryptoChart({ coin, timeframe }) {
 
 function CryptoCard() {
   const [selectedCoin, setSelectedCoin] = useState(coins[0]);
-  // Set default to "1D" 
+  // Set default to "1D"
   const [selectedTimeframe, setSelectedTimeframe] = useState(timeframes[1]);
   const [fallbackSource, setFallbackSource] = useState(null);
-
-  console.log("[CryptoCard] Selected timeframe:", selectedTimeframe);
 
   // Server data (current price, % 24h) uses fetchCryptoData util
   const {
@@ -247,22 +262,18 @@ function CryptoCard() {
         <CryptoChart coin={selectedCoin} timeframe={selectedTimeframe} />
       </div>
 
-      {/* Timeframe picker - Updated to remove 2Y */}
+      {/* Timeframe picker */}
       <div className="flex gap-1 justify-center flex-wrap mb-3">
         {timeframes.map((timeframe) => (
           <button
             key={timeframe.key}
-            onClick={() => {
-              console.log("[CryptoCard] Selecting timeframe:", timeframe);
-              setSelectedTimeframe(timeframe);
-            }}
+            onClick={() => setSelectedTimeframe(timeframe)}
             className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${
               selectedTimeframe.key === timeframe.key
                 ? 'bg-cyan-600 text-white shadow-lg border-2 border-cyan-400'
                 : 'bg-black/30 text-cyan-300 hover:bg-black/50 border border-transparent'
             }`}
-            disabled={timeframe.warn}
-            title={timeframe.warn ? "API timeframe not supported (select ≤1Y)" : ""}
+            title=""
           >
             {timeframe.label}
           </button>
