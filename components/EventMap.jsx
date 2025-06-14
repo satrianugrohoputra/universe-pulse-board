@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -94,7 +93,7 @@ export default function EventMap() {
 
   if (error) {
     return (
-      <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20">
+      <div className="rounded-3xl shadow-xl p-6 bg-white/10 border border-white/20 max-w-[1100px] mx-auto my-6">
         <h2 className="font-bold mb-2 text-white">Natural Events Map (EONET)</h2>
         <div className="text-red-400">Failed to load natural events data.</div>
       </div>
@@ -102,19 +101,27 @@ export default function EventMap() {
   }
 
   return (
-    <div id="events" className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="font-bold text-white">Natural Events Map (EONET)</h2>
+    <div
+      id="events"
+      className="rounded-3xl shadow-xl p-6 bg-white/10 border border-white/20 max-w-[1100px] mx-auto my-6"
+      style={{
+        minWidth: "320px",
+      }}
+    >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+        <h2 className="font-bold text-white text-lg md:text-xl">
+          Natural Events Map (EONET)
+        </h2>
         {/* More visible and user-friendly continent select dropdown */}
-        <div className="relative">
+        <div className="relative w-full max-w-[260px] mt-2 md:mt-0 md:ml-auto">
           <select
-            className="bg-slate-900 border-2 border-cyan-400/70 text-white rounded-xl px-4 py-2 pr-8 text-base font-medium shadow-sm focus:outline-none focus:border-cyan-400 transition-all ease-in-out duration-150 cursor-pointer min-w-[170px] appearance-none"
+            className="bg-slate-900 border-2 border-cyan-400/70 text-white rounded-xl px-4 py-2 pr-8 text-base font-medium shadow-sm focus:outline-none focus:border-cyan-400 transition-all ease-in-out duration-150 cursor-pointer w-full appearance-none"
             value={selectedContinent}
             onChange={e => handleContinentChange(e.target.value)}
             style={{
-              boxShadow: '0 2px 16px 0 rgba(6,182,212,0.1)',
+              boxShadow: '0 2px 16px 0 rgba(6,182,212,0.07)',
               backgroundImage:
-                'linear-gradient(45deg,rgba(6,182,212,0.13),rgba(28,28,38,0.85))'
+                'linear-gradient(45deg,rgba(6,182,212,0.12),rgba(28,28,38,0.85))',
             }}
             aria-label="Select continent"
           >
@@ -132,20 +139,25 @@ export default function EventMap() {
         </div>
       </div>
       <div className="relative">
-        <div className="w-full h-56 bg-black/60 rounded-lg overflow-hidden">
+        <div className="w-full h-[360px] md:h-[480px] bg-black/60 rounded-2xl overflow-hidden transition-all duration-300 border border-white/20">
           {loaded ? (
             <MapContainer
               key={mapKey}
               center={continents[selectedContinent].center}
               zoom={continents[selectedContinent].zoom}
-              style={{ width: "100%", height: "14rem", borderRadius: "0.5rem" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "1.25rem",
+                fontFamily: "inherit"
+              }}
               className="leaflet-container"
-              scrollWheelZoom={true} // easier to zoom
+              scrollWheelZoom={true}
               dragging={true}
               doubleClickZoom={true}
               closePopupOnClick={false}
               worldCopyJump={true}
-              tap={false}           // disables mobile tap-delay
+              tap={false}
               inertia={true}
               inertiaDeceleration={3500}
               inertiaMaxSpeed={1750}
@@ -187,12 +199,12 @@ export default function EventMap() {
               )}
             </MapContainer>
           ) : (
-            <div className="animate-pulse w-full h-full bg-gray-900/30 rounded flex items-center justify-center">
+            <div className="animate-pulse w-full h-full bg-gray-900/30 rounded-lg flex items-center justify-center">
               <div className="text-cyan-300">Loading natural events...</div>
             </div>
           )}
         </div>
-        <div className="flex gap-2 mt-3 flex-wrap">
+        <div className="flex gap-2 mt-4 flex-wrap">
           {Object.entries(legendClasses).map(([title, style]) => (
             <div key={title} className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 ${style}`}>
               <span className="w-2 h-2 rounded-full inline-block bg-white/80 mr-1" />
@@ -200,7 +212,7 @@ export default function EventMap() {
             </div>
           ))}
         </div>
-        <div className="mt-1 text-xs text-cyan-100 opacity-80">
+        <div className="mt-2 text-xs text-cyan-100 opacity-80">
           Map: OpenStreetMap | Events: NASA EONET ({filteredEvents.length} events in {selectedContinent})
         </div>
       </div>
