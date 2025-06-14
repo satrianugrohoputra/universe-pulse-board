@@ -1,14 +1,16 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 
-function fetcher(url) {
-  return fetch(url).then((res) => res.json());
-}
+const NASA_API_KEY = "tBkTBc95GoLSAScjXeOIdxDjAbASfuR9b6M8oBCR";
+const fetcher = url => fetch(url).then(res => res.json());
 
 export default function APODCard() {
   const [expanded, setExpanded] = useState(false);
-  const { data, error, isLoading } = useSWR("/api/apod", fetcher);
+  const { data, error, isLoading } = useSWR(
+    `https://api.nasa.gov/planetary/apod?api_key=${NASA_API_KEY}`,
+    fetcher
+  );
 
   return (
     <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 relative flex flex-col min-h-[22rem]">

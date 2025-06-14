@@ -2,12 +2,14 @@
 import { useState } from "react";
 import useSWR from "swr";
 
-function fetcher(url) {
-  return fetch(url).then((res) => res.json());
-}
+const NASA_API_KEY = "tBkTBc95GoLSAScjXeOIdxDjAbASfuR9b6M8oBCR";
+const fetcher = url => fetch(url).then(res => res.json());
 
 export default function EPICCard() {
-  const { data, error, isLoading } = useSWR("/api/epic", fetcher);
+  const { data, error, isLoading } = useSWR(
+    `https://api.nasa.gov/EPIC/api/natural/images?api_key=${NASA_API_KEY}`,
+    fetcher
+  );
   const [index, setIndex] = useState(0);
   const [modal, setModal] = useState(false);
 

@@ -1,11 +1,50 @@
 
-import { useEffect, useState } from "react";
 import useSWR from "swr";
+const COINGECKO_URL =
+  "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true";
 
-const fetcher = url => fetch(url).then(r => r.json());
+// CoinAPI settings (fallback, not needed unless CoinGecko fails, and requires a key)
+const COINAPI_KEY = "d5678f88-65b8-4067-b871-3f5c794f7582";
+const COINAPI_URL =
+  "https://rest.coinapi.io/v1/assets/?filter_asset_id=BTC,ETH";
+
+const fetcher = async url => {
+  // Try CoinGecko, then fallback to CoinAPI
+  try {
+    const resp = await fetch(COINGECKO_URL);
+    if (!resp.ok) throw new Error("CoinGecko failed");
+    const data = await resp.json();
+    // Normalize output
+    data.bitcoin.usd_24h_change = data.bitcoin.usd_24h_change || 0;
+    data.ethereum.usd_24h_change = data.ethereum.usd_24h_change || 0;
+    return data;
+  } catch {
+    try {
+      const resp2 = await fetch(COINAPI_URL, {
+        headers: { "X-CoinAPI-Key": COINAPI_KEY },
+      });
+      if (!resp2.ok) throw new Error("CoinAPI failed");
+      const arr = await resp2.json();
+      const bitcoin = arr.find(t => t.asset_id === "BTC");
+      const ethereum = arr.find(t => t.asset_id === "ETH");
+      return {
+        bitcoin: {
+          usd: bitcoin.price_usd,
+          usd_24h_change: bitcoin.volume_1day_usd || 0
+        },
+        ethereum: {
+          usd: ethereum.price_usd,
+          usd_24h_change: ethereum.volume_1day_usd || 0
+        }
+      };
+    } catch {
+      throw new Error("Failed to fetch prices from both APIs");
+    }
+  }
+};
 
 export default function CryptoCard() {
-  const { data, error, isLoading } = useSWR("/api/crypto", fetcher, { refreshInterval: 60000 });
+  const { data, error, isLoading } = useSWR(COINGECKO_URL, fetcher, { refreshInterval: 60000 });
   if (isLoading) {
     return (
       <div className="rounded-xl shadow-md p-4 bg-white/10 border border-white/20 min-h-[10rem]">
