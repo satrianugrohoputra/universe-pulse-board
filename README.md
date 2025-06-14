@@ -1,73 +1,75 @@
-# Welcome to your Lovable project
 
-## Project info
+# AstroExplorer Dashboard
 
-**URL**: https://lovable.dev/projects/69b00c5c-2578-453d-9262-fc23a43c363e
+AstroExplorer Dashboard is a modern, responsive dashboard for astronomy and science lovers featuring live NASA images, planetary maps, natural events, live crypto prices, and a daily mood journal.
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+- NASA Astronomy Picture of the Day
+- EPIC Earth imagery browser
+- Interactive NASA planetary maps (Moon, Mars, Vesta)
+- Live BTC/ETH pricing with auto-refresh
+- NASA EONET event mapping
+- Mood & Reflection daily journal (local storage)
+- Responsive 2-column grid UI, dark theme by default
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/69b00c5c-2578-453d-9262-fc23a43c363e) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Getting Started
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### 1. Install dependencies
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+npm install
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 2. Provide API keys
 
-# Step 3: Install the necessary dependencies.
-npm i
+Copy `.env.local.example` to `.env.local`:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```sh
+cp .env.local.example .env.local
+```
+
+Edit `.env.local` and provide your [NASA API Key](https://api.nasa.gov/):
+
+```
+NASA_API_KEY=your_nasa_api_key_here
+```
+
+### 3. Run locally
+
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 4. Build for production
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+npm run build && npm start
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🚀 Deploy
 
-## What technologies are used for this project?
+Ready for one-click deploy to [Vercel](https://vercel.com/):
 
-This project is built with:
+- Deploy button:  
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+### Environment Variables
 
-Simply open [Lovable](https://lovable.dev/projects/69b00c5c-2578-453d-9262-fc23a43c363e) and click on Share -> Publish.
+- `NASA_API_KEY` – required for APOD/EPIC/WMTS data
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+### Attribution
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- NASA Open APIs, NASA EPIC, EONET, CoinGecko API
+- Design by AstroExplorer Project
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
