@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -93,9 +94,7 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  /* Removed global @apply border-border; which caused build error */
 
   body {
     @apply bg-background text-foreground;
