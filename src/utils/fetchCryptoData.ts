@@ -7,7 +7,7 @@
 const COINGECKO_URL =
   "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true";
 
-const COINAPI_KEY = "d5678f88-65b8-4067-b871-3f5c794f7582";
+const COINAPI_KEY = process.env.COINAPI_KEY || "d5678f88-65b8-4067-b871-3f5c794f7582";
 const COINAPI_URL =
   "https://rest.coinapi.io/v1/assets/?filter_asset_id=BTC,ETH";
 
